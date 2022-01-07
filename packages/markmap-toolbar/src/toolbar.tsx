@@ -62,6 +62,8 @@ export class Toolbar {
     'zoomOut',
     'fit',
     'recurse',
+    'foldAll',
+    'unfoldAll',
   ];
 
   items: (string | IToolbarItem)[];
@@ -108,6 +110,29 @@ export class Toolbar {
       onClick: this.getHandler((mm) => mm.fit()),
     });
     this.register({
+      id: 'foldAll',
+      title: 'Fold entire map',
+      content: Toolbar.icon(
+        'M7.114 8.072 4.801 8.07 4.8 9.366 9.336 9.37 9.339 4.834 8.043 4.833 8.042 7.167 3.95 3.091 3.036 4.009 7.114 8.072ZM14.62 11.374 14.615 10.078 10.079 10.096 10.097 14.632 11.393 14.627 11.384 12.293 15.494 16.349 16.404 15.427 12.306 11.383 14.62 11.374Z'
+      ),
+      onClick: this.getHandler((mm) => {
+        this.recurseAll(mm.state.data, true);
+        // we should probably solve this with an event instead of directly invoking renderData
+        mm.renderData(mm.state.data);
+      }),
+    });
+    this.register({
+      id: 'unfoldAll',
+      title: 'Unfold entire map',
+      content: Toolbar.icon(
+        'M8.643 5.241V4.107H4.107L4.107 8.643H5.241L5.241 6.043 8.517 9.319 9.319 8.517 6.043 5.241H8.643ZM14.199 10.797H15.333V15.333H10.797V14.199H13.397L10.121 10.923 10.923 10.121 14.199 13.397V10.797Z'
+      ),
+      onClick: this.getHandler((mm) => {
+        this.recurseAll(mm.state.data, false);
+        mm.renderData(mm.state.data);
+      }),
+    });
+    this.register({
       id: 'recurse',
       title: 'Recursively toggle the next node',
       content: Toolbar.icon('M16 4h-12v12h12v-8h-8v4h2v-2h4v4h-8v-8h10z'),
@@ -121,6 +146,11 @@ export class Toolbar {
       },
     });
     this.setItems(Toolbar.defaultItems);
+  }
+
+  recurseAll(node, foldState) {
+    node.p.f = foldState;
+    node.c?.forEach((n) => this.recurseAll(n, foldState));
   }
 
   setBrand(show: boolean) {
